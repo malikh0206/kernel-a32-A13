@@ -1,0 +1,37 @@
+name: Build on tag
+
+on:
+  push:
+    tags: [ '*' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    
+    - uses: actions/setup-node@v3
+    - name: Checkout kernel source
+      uses: actions/checkout@v3
+
+    - name: Checkout zipper
+      uses: actions/checkout@v3
+      with:
+        repository: malikh0206/AnyKernel3-for-A32
+        path: zipper
+
+    - name: Android kernel build
+      uses: malikh0206/android-kernel-actions-modif1@master #I'm not stealing your fork just adding xz-utils, when you add it to the entrypoint tell me pls.
+      id: build
+      env:
+        NAME: Custom-Kernel-A32
+      with:
+        arch: arm64
+        compiler: clang/10/binutils
+        defconfig: a32_defconfig
+        image: Image.gz
+        
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: /home/runner/work/kernel-test-a32/kernel-test-a32/zipper/Kernel_Package.zip
